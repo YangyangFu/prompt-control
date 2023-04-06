@@ -39,7 +39,8 @@ class RemoteEnvironment():
         response_json = response.json()
         return response_json['observation'], response_json['reward'], response_json['done'], response_json['info']
 
-# Example Usage\nif __name__ == '__main__':
+# Example Usage\n
+if __name__ == '__main__':
     client = GymClient('http://127.0.0.1:5000')
     remote_env = client.make_env('CartPole-v0')
 
