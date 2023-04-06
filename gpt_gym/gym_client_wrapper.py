@@ -1,34 +1,54 @@
-impprt gymnasium as gym
+import gymnasium as gym
+import requests
+import json
 
-class GymClientWrapper(gym.Client):
-    def __init__(self, *args, **kwargs):
-        super(GymClientWrapper, self).__init__(*args, **kwargs)
-        self._env = None
 
-    def make(self, env_id):
-        self._env = super(GymClientWrapper, self).make(env_id)
-        return self._env
+class GymClient():
+    def __init__(self, server_url):
+        self.server_url = server_url
+
+    def make_env(self, env_id):
+        env_data = {
+            'env_id': env_id
+        }
+        response = requests.post(self.server_url + '/v1/envs/', json=env_data)
+        response_json = response.json()
+
+        instance_id = response_json['instance_id']
+        remote_env = RemoteEnvironment(self.server_url, instance_id)
+        return remote_env
+
+
+class RemoteEnvironment():
+    def __init__(self, server_url, instance_id):
+        self.server_url = server_url
+        self.instance_id = instance_id
 
     def reset(self):
-        return self._env.reset()
+        response = requests.post(
+            self.server_url + '/v1/envs/' + self.instance_id + '/reset/')
+        response_json = response.json()
+        return response_json['observation']
 
     def step(self, action):
-        return self._env.step(action)
+        step_data = {
+            'action': action
+        }
+        response = requests.post(
+            self.server_url + '/v1/envs/' + self.instance_id + '/step/', json=step_data)
+        response_json = response.json()
+        return response_json['observation'], response_json['reward'], response_json['done'], response_json['info']
 
-    def render(self, mode='human'):
-        return self._env.render(mode=mode)
+# Example Usage\nif __name__ == '__main__':
+    client = GymClient('http://127.0.0.1:5000')
+    remote_env = client.make_env('CartPole-v0')
 
-    def close(self):
-        return self._env.close()
+    obs = remote_env.reset()
+    print(obs)
 
-    def seed(self, seed=None):
-        return self._env.seed(seed)
-
-    def __del__(self):
-        self.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+    for i in range(100):
+        action = remote_env.action_space.sample()
+        obs, reward, done, info = remote_env.step(action)
+        print(obs, reward, done, info)
+        if done:
+            break
