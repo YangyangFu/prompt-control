@@ -23,7 +23,7 @@ total_reward = 0
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
-    print("Gym environment client is listening...")
+    print("Gym environment server is listening...")
 
     conn, addr = s.accept()
     with conn:

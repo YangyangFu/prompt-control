@@ -26,11 +26,9 @@ def get_ai_response(prompt):
     return response.choices[0].text.strip()
 
 # API Key
-#api_key = os.getenv("OPENAI_API_KEY")
-#if not api_key:
-#    raise ValueError("Please set the OPENAI_API_KEY environment variable")
-
-openai.api_key = "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"
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("Please set the OPENAI_API_KEY environment variable")
 
 # Main
 env_state = [0, 0, 0, 0]
