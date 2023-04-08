@@ -1,24 +1,25 @@
 import openai
 import re
 import argparse
-from airsim_wrapper import *
 import math
 import numpy as np
 import os
 import json
 import time
 
+from agents import RandomDiscreteAgent
+from gym_client import ClientWrapper
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--prompt", type=str, default="prompts/airsim_basic.txt")
+parser.add_argument("--prompt", type=str, default="prompts/basic.txt")
 parser.add_argument("--sysprompt", type=str,
-                    default="system_prompts/airsim_basic.txt")
+                    default="prompts/system.txt")
 args = parser.parse_args()
 
-with open("config.json", "r") as f:
-    config = json.load(f)
-
+# get openai api key
+api_key = os.getenv("OPENAI_API_KEY")
 print("Initializing ChatGPT...")
-openai.api_key = config["OPENAI_API_KEY"]
+openai.api_key = api_key
 
 with open(args.sysprompt, "r") as f:
     sysprompt = f.read()
@@ -30,14 +31,14 @@ chat_history = [
     },
     {
         "role": "user",
-        "content": "move 10 units up"
+        "content": "move left"
     },
     {
         "role": "assistant",
         "content": """```python
-aw.fly_to([aw.get_drone_position()[0], aw.get_drone_position()[1], aw.get_drone_position()[2]+10])
+gc.step(0)
 ```
-This code uses the `fly_to()` function to move the drone to a new position that is 10 units up from the current position. It does this by getting the current position of the drone using `get_drone_position()` and then creating a new list with the same X and Y coordinates, but with the Z coordinate increased by 10. The drone will then fly to this new position using `fly_to()`."""
+This code uses the `step()` function to move the cart pole to left from the current position. It does this by setting the action to 0`."""
     }
 ]
 
@@ -89,18 +90,23 @@ class colors:  # You may need to change color settings
     BLUE = "\033[34m"
 
 
-print(f"Initializing AirSim...")
-aw = AirSimWrapper()
+print(f"Initializing gym client...")
+remote_base = 'http://127.0.0.1:5000'
+gc = ClientWrapper(remote_base)
+print(f"Done.")
+
+print(f"Initializing control agent...")
+ag = RandomDiscreteAgent(2)
 print(f"Done.")
 
 with open(args.prompt, "r") as f:
     prompt = f.read()
 
 ask(prompt)
-print("Welcome to the AirSim chatbot! I am ready to help you with your AirSim questions and commands.")
+print("Welcome to the Gym chatbot! I am ready to help you with your questions and commands.")
 
 while True:
-    question = input(colors.YELLOW + "AirSim> " + colors.ENDC)
+    question = input(colors.YELLOW + "Gym Control> " + colors.ENDC)
 
     if question == "!quit" or question == "!exit":
         break
@@ -115,6 +121,6 @@ while True:
 
     code = extract_python_code(response)
     if code is not None:
-        print("Please wait while I run the code in AirSim...")
+        print("Please wait while I run the code in Gym ClientWrapper...")
         exec(extract_python_code(response))
         print("Done!\n")

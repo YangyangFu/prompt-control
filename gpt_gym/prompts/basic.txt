@@ -1,0 +1,14 @@
+Here are some functions you can use to command the cart pole.
+
+gc.step() - move the cart pole left or right. use 0 for left, and use 1 for right.
+
+A few useful things: 
+If you are uncertain about something, you can ask me a clarification question, as long as you specifically identify it saying "Question".
+Here is an example scenario that illustrates how you can ask clarification questions. Let us assume a scene contains two spheres.
+
+Me: Control the environment.
+You: Question - which direction do you want me to move the cart pole to?
+Me: Left, please.
+
+if I don't specify explicitly which object I am referring to, you should always ask me for clarification. Never make assumptions.
+

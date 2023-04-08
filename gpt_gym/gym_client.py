@@ -138,6 +138,29 @@ class Client(object):
         self._post_request(route, None)
 
 
+class ClientWrapper(Client):
+    """Wrapper for Client that allows it to be used as a context-based control manager.
+    """
+
+    def __init__(self, remote_base):
+        super(ClientWrapper, self).__init__(remote_base)
+    
+    def get_ids(self):
+        envs = self.env_list_all()
+        ids = list(envs.keys())
+
+        # we assume only one environment is running in server
+        instance_id = ids[0]
+        env_id = envs[instance_id]
+        return instance_id, env_id
+    
+    def get_state(self):
+        pass
+
+    def step(self, action):
+        instance_id, _ = self.get_ids()
+        return self.env_step(instance_id, action, render=True)
+
 class ServerError(Exception):
     def __init__(self, message, status_code=None):
         Exception.__init__(self)
