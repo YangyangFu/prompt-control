@@ -1,2 +1,5 @@
 # cache
 __pycache__/
+
+# mac
+.DS_Store
