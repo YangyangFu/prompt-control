@@ -13,3 +13,4 @@ Need X11 session to render.
 
 # TODOs
 - enable video record
+- support docker app, such as containerized energyplus or modelica
